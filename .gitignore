@@ -21,4 +21,5 @@ htmlcov/
 backend/chat_logs.txt
 frontend/__pycache__/
 backend/__pycache__/
-conversations/*.json
+conversations/*
+!conversations/.gitkeep
