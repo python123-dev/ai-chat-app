@@ -39,6 +39,11 @@ The app depends on the Python packages listed in `requirements.txt`, including:
 - `anyio`
 - `starlette`
 
+The project also requires:
+
+- A local Ollama installation
+- A local Ollama-compatible LLM model loaded, such as `smollm:latest`
+
 Additional dependencies include the packages required by Gradio, requests, and the backend API.
 
 ## Setup and Run
@@ -56,13 +61,15 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-3. Start the backend API.
+3. Ensure Ollama is installed and running locally, and that a model such as `smollm:latest` is loaded.
+
+4. Start the backend API.
 
 ```powershell
 uvicorn backend.main:app --reload
 ```
 
-4. Start the frontend UI.
+5. Start the frontend UI.
 
 ```powershell
 python frontend/app.py
@@ -110,7 +117,7 @@ ai-chat-app/
 ## Troubleshooting
 
 - If the frontend raises errors while renaming or deleting chats, make sure the backend is running and the `conversations/` folder exists.
-- If the AI response call fails, verify that Ollama is running on `localhost:11434` and the configured model `smollm:latest` is available.
+- If the AI response call fails, verify that Ollama is running on `localhost:11434`, and that a local model such as `smollm:latest` is loaded and available.
 - If the `requirements.txt` file is encoding-sensitive, use the proper environment and a UTF-16-capable editor to inspect it.
 
 
