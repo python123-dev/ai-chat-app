@@ -32,10 +32,14 @@ Rules:
 CURRENT_CHAT = "chat_1"
 
 
+# ----- File utilities -----
+
 def get_chat_file():
     """Build the file path for the current chat session."""
     return f"conversations/{CURRENT_CHAT}.json"
 
+
+# ----- History persistence -----
 
 def load_history():
     """Load the current chat session history from disk.
@@ -93,6 +97,8 @@ class DeleteChatRequest(BaseModel):
 
 
 # ----- API endpoints -----
+# The routes below expose chat history, switching, session management,
+# and model forwarding for the local Ollama backend.
 @app.get("/")
 def home():
     """Health check endpoint for the backend service."""
