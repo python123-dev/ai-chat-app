@@ -7,7 +7,7 @@ conversation history, and sends user messages to the backend chat API.
 import gradio as gr
 import requests
 
-# URL for the backend chat endpoint.
+# Base URL for the backend chat endpoint.
 API_URL = "http://127.0.0.1:8000/chat"
 
 # ----- Helper functions -----
@@ -19,7 +19,10 @@ def get_chat_list():
 
 
 def chat_with_ai(message, history):
-    """Send a user message to the backend and append the response to history."""
+    """Send a user message to the backend and append the assistant response.
+
+    Returns an empty message string plus the updated chat history for the UI.
+    """
     try:
         response = requests.post(
             API_URL,
@@ -30,6 +33,7 @@ def chat_with_ai(message, history):
 
         ai_response = response.json()["response"]
 
+        # Keep the UI conversation synced with the backend.
         history.append({"role": "user", "content": message})
         history.append({"role": "assistant", "content": ai_response})
 
@@ -62,92 +66,76 @@ def load_chat_history():
 
 
 def create_new_chat():
-
-    response = requests.post(
-        "http://127.0.0.1:8000/new_chat"
-    )
-
+    """Create a new chat session and refresh the available chat list."""
+    response = requests.post("http://127.0.0.1:8000/new_chat")
     current_chat = response.json()["current_chat"]
 
-    chats_response = requests.get(
-        "http://127.0.0.1:8000/chats"
-    )
-
+    chats_response = requests.get("http://127.0.0.1:8000/chats")
     chats = chats_response.json()["chats"]
 
     return (
         gr.update(
             choices=chats,
-            value=current_chat
+            value=current_chat,
         ),
-        []
+        [],
     )
 
 
 
 def rename_chat_ui(chat_name, new_name):
-
+    """Rename the selected chat session and update dropdown state."""
     response = requests.post(
         "http://127.0.0.1:8000/rename_chat",
         json={
             "old_name": chat_name,
-            "new_name": new_name
-        }
+            "new_name": new_name,
+        },
     )
 
     result = response.json()
 
-    chats_response = requests.get(
-        "http://127.0.0.1:8000/chats"
-    )
-
+    chats_response = requests.get("http://127.0.0.1:8000/chats")
     chats = chats_response.json()["chats"]
     current_chat = result.get("current_chat", chat_name)
 
     return (
         gr.update(
             choices=chats,
-            value=current_chat
+            value=current_chat,
         ),
-        ""
+        "",
     )
 
 
 
 
 def delete_chat_ui(chat_name):
-
+    """Delete a chat session and load the next available session."""
     response = requests.post(
         "http://127.0.0.1:8000/delete_chat",
-        json={
-            "chat_name": chat_name
-        }
+        json={"chat_name": chat_name},
     )
 
     result = response.json()
 
-    chats_response = requests.get(
-        "http://127.0.0.1:8000/chats"
-    )
-
+    chats_response = requests.get("http://127.0.0.1:8000/chats")
     chats = chats_response.json()["chats"]
 
-    history_response = requests.get(
-        "http://127.0.0.1:8000/history"
-    )
-
+    history_response = requests.get("http://127.0.0.1:8000/history")
     history = history_response.json()["history"]
 
     return (
         gr.update(
             choices=chats,
-            value=result["current_chat"]
+            value=result["current_chat"],
         ),
-        history
+        history,
     )
 
 
 # ----- UI definition -----
+# Build the Gradio frontend and wire user events to helper functions.
 
 with gr.Blocks() as demo:
     gr.Markdown("# 🤖 Local AI Chat")
@@ -178,7 +166,7 @@ with gr.Blocks() as demo:
 
     chatbot = gr.Chatbot(value=load_chat_history(), height=500)
 
-    # Reload the chatbot history when a different session is selected.
+    # Reload the current session history when the selected chat changes.
     chat_selector.change(fn=switch_chat, inputs=[chat_selector], outputs=[chatbot])
 
     message = gr.Textbox(placeholder="Type your message here...")
